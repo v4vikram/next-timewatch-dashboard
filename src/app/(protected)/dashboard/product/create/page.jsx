@@ -361,8 +361,8 @@ const handleProductCreate = async (values, { resetForm, setFieldValue }) => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="submit" className={"mt-3"}>
-                Update Product
+              <Button type="submit" className={"mt-3 cursor-pointer"}>
+                Create Product
               </Button>
             </div>
           </Form>

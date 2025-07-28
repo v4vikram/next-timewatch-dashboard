@@ -1,4 +1,5 @@
 import {
+  Box,
   Calendar,
   ChevronDown,
   Home,
@@ -8,6 +9,7 @@ import {
   Plus,
   Search,
   Settings,
+  User,
 } from "lucide-react";
 
 import {
@@ -30,7 +32,7 @@ import Link from "next/link";
 const sidebarItems = [
   {
     label: "Products",
-    icon: <Logs className="text-primary-foreground"/>,
+    icon: <Box className="text-primary-foreground"/>,
     items: [
       {
         label: "Create Product",
@@ -44,7 +46,23 @@ const sidebarItems = [
       },
     ],
   },
-  // Add more groups here if needed
+  {
+    label: "Customer",
+    icon: <User className="text-primary-foreground"/>,
+    items: [
+      // {
+      //   label: "Create Product",
+      //   href: "/dashboard/product/create",
+      //   icon: <Plus className="w-4" />,
+      // },
+      {
+        label: "Customer List",
+        href: "/dashboard/customer",
+        icon: <List className="w-4" />,
+      },
+    ],
+  },
+ 
 ];
 
 export function AppSidebar() {
@@ -70,7 +88,7 @@ export function AppSidebar() {
               <SidebarGroupContent key={itemIdx}>
                 <Link
                   href={item.href}
-                  className="flex items-center gap-x-1 cursor-pointer hover:bg-muted px-2 py-1 bg-red-200. rounded-md my-1 ml-2"
+                  className="flex items-center gap-x-1 cursor-pointer hover:bg-muted px-2 py-1 bg-red-200. rounded-md my-1 ml-3"
 
                 >
                   {item.icon}

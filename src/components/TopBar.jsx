@@ -13,6 +13,8 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { SidebarTrigger } from "./ui/sidebar";
+import { DialogContent } from "@radix-ui/react-dialog";
+import MobileTopBar from "./MobileTopBar";
 
 export default function TopBar() {
   const router = useRouter();
@@ -56,31 +58,7 @@ export default function TopBar() {
         </DropdownMenu>
 
         {/* Hamburger for Mobile */}
-        <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="icon" variant="ghost">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <nav className="mt-4 space-y-4">
-                <button
-                  onClick={() => router.push("/profile")}
-                  className="w-full text-left text-sm font-medium"
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left text-sm font-medium text-red-600"
-                >
-                  Logout
-                </button>
-              </nav>
-            </SheetContent>
-          </Sheet>
-        </div>
+       <MobileTopBar/>
       </div>
     </header>
   );

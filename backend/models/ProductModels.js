@@ -23,7 +23,15 @@ const productSchema = new mongoose.Schema({
       column1: String,
       column2: String,
     },
-  ]
+  ],
+    isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
 }, { timestamps: true });
 
 // ✅ Force delete cached model before redefining

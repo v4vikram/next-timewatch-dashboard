@@ -26,13 +26,14 @@ import { useProductStore } from "@/store/useProductStore";
 import { toast } from "sonner";
 
 export default function ProductForm() {
-  const { updateProduct, fetchProductById } = useProductStore();
+  const {product, updateProduct, fetchProductById } = useProductStore();
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState("");
   const [selectCategory, setSelectCategory] = useState("");
   const [selectSubCategory, setSelectSubCategory] = useState("");
   const { id } = useParams();
   const [editProduct, setEditProduct] = useState("");
+  // console.log("fetch product by id", product)
 
   const initialValues = {
     categoryName: editProduct?.categoryName || "",
@@ -440,8 +441,8 @@ const handleProductCreate = async (values, { resetForm, setFieldValue }) => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="submit" className={"mt-3"}>
-                Add Product
+              <Button type="submit" className={"mt-3 cursor-pointer"}>
+                Update Product
               </Button>
             </div>
           </Form>
