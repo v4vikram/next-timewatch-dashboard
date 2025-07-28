@@ -13,14 +13,17 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Trash, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCustomerStore } from "@/store/useCustomerStore";
 
 const CustomerListPage = () => {
-  const { products, loading, fetchProducts } = useProductStore();
+  const { customers, loading, fetchCustomers } = useCustomerStore();
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
 
+  console.log("customers", customers)
+
   const table = useReactTable({
-    data: products,
+    data: customers,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
@@ -32,7 +35,7 @@ const CustomerListPage = () => {
   });
 
   useEffect(() => {
-    fetchProducts();
+    fetchCustomers();
   }, []);
 
   return (
@@ -52,19 +55,19 @@ const CustomerListPage = () => {
           </Link> */}
 
           <h1 className="font-semibold text-lg">All Customer</h1>
-          {products.length == 0 ? (
+          {customers.length == 0 ? (
             <span>(0)</span>
           ) : (
-            <span>({products?.length})</span>
+            <span>({customers?.length})</span>
           )}
         </div>
 
         <Input
-          placeholder="Filter products..."
-          value={table.getColumn("productName")?.getFilterValue() ?? ""}
+          placeholder="Filter customers..."
+          value={table.getColumn("name")?.getFilterValue() ?? ""}
           onChange={(event) => {
             console.log(event.target.value);
-            table.getColumn("productName")?.setFilterValue(event.target.value);
+            table.getColumn("name")?.setFilterValue(event.target.value);
           }}
           className="md:max-w-[250px]"
         />

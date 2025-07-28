@@ -16,27 +16,22 @@ import {
 import { useProductStore } from "@/store/useProductStore";
 import { Checkbox } from "@/components/ui/checkbox";
 
-function AlertDialogDelete({ productId, children }) {
-  const { products, trashProductById } = useProductStore();
+function AlertDialogDelete() {
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+    
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription className={"flex items-center"}>
-            <span>"The product will be moved to the trash."</span>
-            {/* <Trash2 className="text-red-500"/> */}
+          <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+          <AlertDialogDescription className="flex items-center">
+            Are you sure you want to delete this customer?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className={"cursor-pointer"}>
+          <AlertDialogCancel className="cursor-pointer">
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => trashProductById(productId)}
-            className={"cursor-pointer"}
-          >
+          <AlertDialogAction className="cursor-pointer">
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -45,79 +40,55 @@ function AlertDialogDelete({ productId, children }) {
   );
 }
 
+
+
 export const columns = [
   {
-    accessorKey: "productName",
-    header: "Product Name",
-    cell: ({ row }) => row.original.productName || "-",
+    accessorKey: "name",
+    header: "Customer Name",
+    cell: ({ row }) => row.original.name || "-",
   },
   {
-    accessorKey: "productSlug",
-    header: "Slug",
-    cell: ({ row }) => row.original.productSlug || "-",
+    accessorKey: "email",
+    header: "Customer Email",
+    cell: ({ row }) => row.original.email || "-",
   },
   {
-    accessorKey: "productImage",
-    header: "Thumbnail",
+   id: "actions2",
+    header: "Action2",
     cell: ({ row }) => {
-      const image = row.original.productImage;
-      return image ? (
-        <Image
-          src={process.env.NEXT_PUBLIC_BASE_URL + image}
-          alt="Product"
-          width={50}
-          height={50}
-        />
-      ) : (
-        "-"
+      return (
+        <>
+        
+          <AlertDialogDelete>
+            weffew
+          {/* <Trash2 className="w-5 cursor-pointer" /> */}
+        </AlertDialogDelete>
+        </>
       );
     },
   },
   {
-    accessorKey: "categoryName",
-    header: "Category",
-    cell: ({ row }) => row.original.categoryName || "-",
+    accessorKey: "Customer Location",
+    header: "location",
+    cell: ({ row }) => row.original.location || "-",
   },
   {
-    accessorKey: "subCategoryName",
-    header: "Subcategory",
-    cell: ({ row }) => row.original.subCategoryName || "-",
-  },
-{
-  accessorKey: "updatedAt",
-  header: "Updated At",
-  cell: ({ row }) => {
-    const date = new Date(row.original.updatedAt);
-    return date.toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata", // optional, for IST
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  },
-},
-  {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "updatedAt",
+    header: "Updated At",
     cell: ({ row }) => {
-      const status = row.original.status;
-      return status ? (
-        <span
-          className={`inline-block px-2 py-1 rounded text-sm ${
-            status === "active"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {status}
-        </span>
-      ) : (
-        "-"
-      );
+      const date = new Date(row.original.updatedAt);
+      return date.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata", // optional, for IST
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     },
   },
+
   {
     id: "actions",
     header: "Action",
