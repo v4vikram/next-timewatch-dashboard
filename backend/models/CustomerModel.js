@@ -11,7 +11,12 @@ const customerSchema = new mongoose.Schema(
     source: { type: String, default: "website" }, // e.g., website, chatbot
     status: {
       type: String,
-      enum: ["new", "contacted", "converted", "archived"],
+      enum: ["new", "contacted", "converted", "reject"],
+      default: "new",
+    },
+    type: {
+      type: String,
+      enum: ["new", "sales", "support"],
       default: "new",
     },
   },

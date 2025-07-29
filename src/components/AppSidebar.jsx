@@ -29,6 +29,10 @@ import {
 } from "@radix-ui/react-collapsible";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCustomerStore } from "@/store/useCustomerStore";
+import { useEffect, useState } from "react";
+import { Badge } from "./ui/badge";
+import { Skeleton } from "./ui/skeleton";
 
 const sidebarItems = [
   {
@@ -73,17 +77,27 @@ const sidebarItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const parentPath = pathname.split("/")[2];
-  const childtPath = pathname.split("/")[3] ? pathname.split("/")[3] : pathname.split("/")[2];
+  const childtPath = pathname.split("/")[3]
+    ? pathname.split("/")[3]
+    : pathname.split("/")[2];
+  const { customers, fetchCustomers } = useCustomerStore();
+  const [loading, setLoading] = useState(true);
+  console.log("app customer", customers);
 
-  // sidebarItems?.map((link)=>link?.items((subLink)=>subLink?.label === ))
-
-  console.log("pathname", parentPath, childtPath);
+  useEffect(() => {
+    fetchCustomers();
+    setLoading(false);
+  }, []);
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className={"gap-0"}>
         {sidebarItems.map((group, idx) => (
-          <Collapsible key={idx} defaultOpen className="group/collapsible">
-            <SidebarGroup>
+          <Collapsible
+            key={idx}
+            defaultOpen={true}
+            className="group/collapsible"
+          >
+            <SidebarGroup className={"p-2 pb-0"}>
               <SidebarGroupLabel asChild>
                 <CollapsibleTrigger
                   className={`flex gap-x-1 cursor-pointer ${
@@ -116,6 +130,15 @@ export function AppSidebar() {
                       >
                         {item.label}
                       </span>
+                      {!loading && item?.childCurrentLink === "customer" ? (
+                        <Badge className="bg-red-500">
+                          {customers?.filter((c) => c.status === "new").length}
+                        </Badge>
+                      ) : (
+                        <Skeleton />
+                      )}
+
+                      {/* <Badge>.</Badge> */}
                     </Link>
                   </SidebarGroupContent>
                 ))}

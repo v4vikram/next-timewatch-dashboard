@@ -6,12 +6,20 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   await dbConnect();
   const body = await req.json();
-  const lead = await CustomerModel.create(body);
-  return NextResponse.json({ success: true, lead });
-}
+  console.log("body!", body)
 
-export async function GET() {
-  await dbConnect();
-  const leads = await CustomerModel.find().sort({ createdAt: -1 });
-  return NextResponse.json({ success: true, leads });
+  // Explicitly apply defaults if not provided
+  const leadData = {
+    ...body,
+    status: body.status || "new",
+    type: body.type || "new",
+  };
+
+  try {
+    const lead = await CustomerModel.create(leadData);
+    return NextResponse.json({ success: true, lead });
+  } catch (error) {
+    console.error("Error creating lead:", error);
+    return NextResponse.json({ success: false, message: "Failed to create lead", error }, { status: 500 });
+  }
 }

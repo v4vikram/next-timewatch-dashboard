@@ -23,7 +23,7 @@ export default function TopBar() {
     // Perform logout logic here
     localStorage.clear("userLogin");
     console.log("Logged out");
-    router.push("/login");
+    router.push("/");
   };
 
   return (

@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }) {
     setIsLogged(isLogin);
     // Only redirect if not logged in
     if (!isLogin) {
-      router.push("/login");
+      router.push("/");
     }
   }, []);
 
