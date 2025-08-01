@@ -21,6 +21,7 @@ import { productCreateSchema } from "@/validationSchema/productSchema";
 import Image from "next/image";
 import { toast } from "sonner";
 import StaticBreadcrumb from "@/components/DynamicBreadcrumb";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export default function ProductForm() {
   const { createProduct } = useProductStore();
@@ -44,61 +45,69 @@ export default function ProductForm() {
     status: "draft",
   };
 
-const handleProductCreate = async (values, { resetForm, setFieldValue }) => {
-  try {
-    const formData = new FormData();
+  const handleProductCreate = async (values, { resetForm, setFieldValue }) => {
+    try {
+      const formData = new FormData();
 
-    // Append simple fields
-    formData.append("categoryName", values.categoryName);
-    formData.append("subCategoryName", values.subCategoryName);
-    formData.append("productName", values.productName);
-    formData.append("description", values.description);
-    formData.append("datasheetFile", values.datasheetFile);
-    formData.append("connectionDiagramFile", values.connectionDiagramFile);
-    formData.append("userManualFile", values.userManualFile);
-    formData.append("productkeywords", values.productkeywords);
-    formData.append("status", values.status);
+      // Append simple fields
+      formData.append("categoryName", values.categoryName);
+      formData.append("subCategoryName", values.subCategoryName);
+      formData.append("productName", values.productName);
+      formData.append("description", values.description);
+      formData.append("datasheetFile", values.datasheetFile);
+      formData.append("connectionDiagramFile", values.connectionDiagramFile);
+      formData.append("userManualFile", values.userManualFile);
+      formData.append("productkeywords", values.productkeywords);
+      formData.append("status", values.status);
 
-    // Append product image
-    formData.append("productImage", file);
+      // Append product image
+      formData.append("productImage", file);
 
-    // Append features
-    values.features.forEach((feature, index) => {
-      formData.append(`features[${index}][title]`, feature.title);
-      formData.append(`features[${index}][image]`, feature.image);
-    });
+      // Append features
+      values.features.forEach((feature, index) => {
+        formData.append(`features[${index}][title]`, feature.title);
+        formData.append(`features[${index}][image]`, feature.image);
+      });
 
-    // Append table
-    values.table.forEach((row, index) => {
-      formData.append(`table[${index}][column1]`, row.column1);
-      formData.append(`table[${index}][column2]`, row.column2);
-    });
+      // Append table
+      values.table.forEach((row, index) => {
+        formData.append(`table[${index}][column1]`, row.column1);
+        formData.append(`table[${index}][column2]`, row.column2);
+      });
 
-    // Debug log FormData
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-
-    await createProduct(formData); // assuming createProduct returns a promise
-
-    toast.success("Product created successfully", {
-      className: "success",
-    });
-
-    // Optionally reset form
-    // resetForm();
-  } catch (err) {
-    console.error("Product creation error:", err);
-    toast.error(
-      `Error: ${
-        err?.response?.data?.message || err.message || "Unexpected error"
-      }`,
-      {
-        className: "error",
+      // Debug log FormData
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
       }
-    );
-  }
-};
+
+      await createProduct(formData); // assuming createProduct returns a promise
+
+      toast.success("Product created successfully", {
+        className: "success",
+      });
+
+      // Optionally reset form
+      // resetForm();
+    } catch (err) {
+      console.error("Product creation error:", err);
+      toast.error(
+        `Error: ${
+          err?.response?.data?.message || err.message || "Unexpected error"
+        }`,
+        {
+          className: "error",
+        }
+      );
+    }
+  };
+
+  // Helper to reorder list
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+  };
 
   return (
     <div className="p-4">
@@ -106,7 +115,7 @@ const handleProductCreate = async (values, { resetForm, setFieldValue }) => {
         items={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Products", href: "/dashboard/products" },
-          { label: "Create Product" }, 
+          { label: "Create Product" },
         ]}
       />
       <h1 className="mb-3 font-semibold text-lg">Create Product</h1>
@@ -245,50 +254,88 @@ const handleProductCreate = async (values, { resetForm, setFieldValue }) => {
                 <FieldArray name="features">
                   {({ push, remove }) => (
                     <>
-                      {values.features.map((feature, index) => (
-                        <div
-                          key={index}
-                          className="border border-gray-300 p-3 rounded space-y- flex flex-col md:flex-row gap-2 mb-3"
-                        >
-                          <Input
-                            name={`features[${index}].title`}
-                            placeholder="Title"
-                            value={feature.title}
-                            onChange={handleChange}
-                          />
-                          <Input
-                            name={`features[${index}].image`}
-                            type={"file"}
-                            placeholder="Image filename"
-                            // value={feature.image}
-                            onChange={(e) => {
-                              setFieldValue(
-                                `features[${index}].image`,
-                                e.currentTarget.files[0]
-                              );
-                            }}
-                          />
-                          {feature.image && (
-                            <div className="block w-20 overflow-hidden h-9 rounded-full relative">
-                              <Image
-                                src={URL.createObjectURL(feature.image)}
-                                alt="preview"
-                                fill
-                                className="w-full h-full object-cover"
-                              />
+                      <DragDropContext
+                        onDragEnd={(result) => {
+                          if (!result.destination) return;
+                          const items = reorder(
+                            values.features,
+                            result.source.index,
+                            result.destination.index
+                          );
+                          setFieldValue("features", items);
+                        }}
+                      >
+                        <Droppable droppableId="droppable-features">
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                              className="space-y-3"
+                            >
+                              {values.features.map((feature, index) => (
+                                <Draggable
+                                  key={`feature-${index}`}
+                                  draggableId={`feature-${index}`}
+                                  index={index}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      className="border border-gray-300 p-3 rounded flex flex-col md:flex-row gap-2 items-center"
+                                    >
+                                      <span className="cursor-grab">☰</span>
+                                      <Input
+                                        name={`features[${index}].title`}
+                                        placeholder="Title"
+                                        value={feature.title}
+                                        onChange={handleChange}
+                                      />
+                                      <Input
+                                        type="file"
+                                        onChange={(e) =>
+                                          setFieldValue(
+                                            `features[${index}].image`,
+                                            e.currentTarget.files[0]
+                                          )
+                                        }
+                                      />
+                                      {feature.image &&
+                                        typeof feature.image !== "string" && (
+                                          <div className="relative w-20 h-10">
+                                            <Image
+                                              src={URL.createObjectURL(
+                                                feature.image
+                                              )}
+                                              alt="preview"
+                                              fill
+                                              className="object-cover rounded"
+                                            />
+                                          </div>
+                                        )}
+                                      <Button
+                                        type="button"
+                                        onClick={() => remove(index)}
+                                      >
+                                        <Trash2 />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provided.placeholder}
                             </div>
                           )}
-                          <Button type="button" onClick={() => remove(index)}>
-                            <Trash2 />
-                          </Button>
-                        </div>
-                      ))}
+                        </Droppable>
+                      </DragDropContext>
                       <Button
                         type="button"
-                        className={"mt-2"}
+                        className="mt-2"
                         onClick={() => push({ title: "", image: "" })}
                       >
-                        <Plus /> Add
+                        <Plus className="mr-1 h-4 w-4" />
+                        Add Feature
                       </Button>
                     </>
                   )}
@@ -301,31 +348,72 @@ const handleProductCreate = async (values, { resetForm, setFieldValue }) => {
                 <FieldArray name="table">
                   {({ push, remove }) => (
                     <>
-                      {values.table.map((row, index) => (
-                        <div
-                          key={index}
-                          className="border border-gray-300 p-3 rounded space-y- flex flex-col md:flex-row gap-2 mb-3"
-                        >
-                          <Input
-                            name={`table[${index}].column1`}
-                            placeholder="Column 1"
-                            value={row.column1}
-                            onChange={handleChange}
-                          />
-                          <Input
-                            name={`table[${index}].column2`}
-                            placeholder="Column 2"
-                            value={row.column2}
-                            onChange={handleChange}
-                          />
-                          <Button type="button" onClick={() => remove(index)}>
-                            <Trash2 />
-                          </Button>
-                        </div>
-                      ))}
+                      <DragDropContext
+                        onDragEnd={(result) => {
+                          const { source, destination } = result;
+                          if (!destination) return;
+
+                          const reorderedTable = [...values.table];
+                          const [removed] = reorderedTable.splice(
+                            source.index,
+                            1
+                          );
+                          reorderedTable.splice(destination.index, 0, removed);
+
+                          setFieldValue("table", reorderedTable);
+                        }}
+                      >
+                        <Droppable droppableId="table-droppable">
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.droppableProps}
+                            >
+                              {values.table.map((row, index) => (
+                                <Draggable
+                                  key={index}
+                                  draggableId={`table-${index}`}
+                                  index={index}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      className="border border-gray-300 p-3 rounded flex flex-col md:flex-row gap-2 mb-3 bg-white items-center"
+                                    >
+                                        <span className="cursor-grab">☰</span>
+                                      <Input
+                                        name={`table[${index}].column1`}
+                                        placeholder="Column 1"
+                                        value={row.column1}
+                                        onChange={handleChange}
+                                      />
+                                      <Input
+                                        name={`table[${index}].column2`}
+                                        placeholder="Column 2"
+                                        value={row.column2}
+                                        onChange={handleChange}
+                                      />
+                                      <Button
+                                        type="button"
+                                        onClick={() => remove(index)}
+                                      >
+                                        <Trash2 />
+                                      </Button>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provided.placeholder}
+                            </div>
+                          )}
+                        </Droppable>
+                      </DragDropContext>
+
                       <Button
                         type="button"
-                        className={"mt-2"}
+                        className="mt-2"
                         onClick={() => push({ column1: "", column2: "" })}
                       >
                         <Plus />

@@ -24,6 +24,7 @@ import { getOriginalFilename } from "@/lib/stringChanges";
 import StaticBreadcrumb from "@/components/DynamicBreadcrumb";
 import { useProductStore } from "@/store/useProductStore";
 import { toast } from "sonner";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 export default function ProductForm() {
   const {product, updateProduct, fetchProductById } = useProductStore();
@@ -314,105 +315,168 @@ const handleProductCreate = async (values, { resetForm, setFieldValue }) => {
                   )}
               </div>
 
-              {/* Features array */}
+             {/* Features array with Drag-and-Drop */}
               <div className="col-span-3">
                 <Label>Features</Label>
                 <FieldArray name="features">
                   {({ push, remove }) => (
-                    <>
-                      {values.features.map((feature, index) => (
-                        <div
-                          key={index}
-                          className="border border-gray-300 p-3 rounded space-y- flex flex-col md:flex-row gap-2 mb-3"
-                        >
-                          <Input
-                            name={`features[${index}].title`}
-                            placeholder="Title"
-                            value={feature.title}
-                            onChange={handleChange}
-                          />
-                          <Input
-                            name={`features[${index}].image`}
-                            type={"file"}
-                            placeholder="Image filename"
-                            // value={feature.image}
-                            onChange={(e) => {
-                              setFieldValue(
-                                `features[${index}].image`,
-                                e.currentTarget.files[0]
-                              );
-                            }}
-                          />
-                          {feature.image && (
-                            <div className="block w-20 overflow-hidden h-9 rounded-full relative">
-                              <Image
-                                src={
-                                  typeof feature.image === "string"
-                                    ? feature.image // it's already a backend URL
-                                    : URL.createObjectURL(feature.image) // it's a File
-                                }
-                                alt="preview"
-                                fill
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <Button type="button" onClick={() => remove(index)}>
-                            <Trash2 />
-                          </Button>
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        className={"mt-2"}
-                        onClick={() => push({ title: "", image: "" })}
-                      >
-                        <Plus /> Add
-                      </Button>
-                    </>
+                    <DragDropContext
+                      onDragEnd={({ source, destination }) => {
+                        if (!destination) return;
+                        const updated = [...values.features];
+                        const [moved] = updated.splice(source.index, 1);
+                        updated.splice(destination.index, 0, moved);
+                        setFieldValue("features", updated);
+                      }}
+                    >
+                      <Droppable droppableId="features-droppable">
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                          >
+                            {values.features.map((feature, index) => (
+                              <Draggable
+                                key={index}
+                                draggableId={`features-${index}`}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className="border border-gray-300 p-3 rounded flex flex-col md:flex-row gap-2 mb-3 bg-white items-center"
+                                  >
+                                      <span className="cursor-grab">☰</span>
+                                    <Input
+                                      name={`features[${index}].title`}
+                                      placeholder="Title"
+                                      value={feature.title}
+                                      onChange={handleChange}
+                                    />
+                                    <Input
+                                      name={`features[${index}].image`}
+                                      type="file"
+                                      onChange={(e) => {
+                                        setFieldValue(
+                                          `features[${index}].image`,
+                                          e.currentTarget.files[0]
+                                        );
+                                      }}
+                                    />
+                                    {feature.image && (
+                                      <div className="block w-20 h-9 rounded-full overflow-hidden relative">
+                                        <Image
+                                          src={
+                                            typeof feature.image === "string"
+                                              ? feature.image
+                                              : URL.createObjectURL(
+                                                  feature.image
+                                                )
+                                          }
+                                          alt="preview"
+                                          fill
+                                          className="object-cover"
+                                        />
+                                      </div>
+                                    )}
+                                    <Button
+                                      type="button"
+                                      onClick={() => remove(index)}
+                                    >
+                                      <Trash2 />
+                                    </Button>
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
                   )}
                 </FieldArray>
+                <Button
+                  type="button"
+                  className="mt-2"
+                  onClick={() => push({ title: "", image: "" })}
+                >
+                  <Plus /> Add
+                </Button>
               </div>
 
-              {/* Table array */}
+              {/* Technical Table with Drag-and-Drop */}
               <div className="col-span-3">
                 <Label>Technical Table</Label>
                 <FieldArray name="table">
                   {({ push, remove }) => (
-                    <>
-                      {values.table.map((row, index) => (
-                        <div
-                          key={index}
-                          className="border border-gray-300 p-3 rounded space-y- flex flex-col md:flex-row gap-2 mb-3"
-                        >
-                          <Input
-                            name={`table[${index}].column1`}
-                            placeholder="Column 1"
-                            value={row.column1}
-                            onChange={handleChange}
-                          />
-                          <Input
-                            name={`table[${index}].column2`}
-                            placeholder="Column 2"
-                            value={row.column2}
-                            onChange={handleChange}
-                          />
-                          <Button type="button" onClick={() => remove(index)}>
-                            <Trash2 />
-                          </Button>
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        className={"mt-2"}
-                        onClick={() => push({ column1: "", column2: "" })}
-                      >
-                        <Plus />
-                        Add
-                      </Button>
-                    </>
+                    <DragDropContext
+                      onDragEnd={({ source, destination }) => {
+                        if (!destination) return;
+                        const updated = [...values.table];
+                        const [moved] = updated.splice(source.index, 1);
+                        updated.splice(destination.index, 0, moved);
+                        setFieldValue("table", updated);
+                      }}
+                    >
+                      <Droppable droppableId="table-droppable">
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                          >
+                            {values.table.map((row, index) => (
+                              <Draggable
+                                key={index}
+                                draggableId={`table-${index}`}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className="border border-gray-300 p-3 rounded flex flex-col md:flex-row gap-2 mb-3 bg-white items-center"
+                                  >
+                                      <span className="cursor-grab">☰</span>
+                                    <Input
+                                      name={`table[${index}].column1`}
+                                      placeholder="Column 1"
+                                      value={row.column1}
+                                      onChange={handleChange}
+                                    />
+                                    <Input
+                                      name={`table[${index}].column2`}
+                                      placeholder="Column 2"
+                                      value={row.column2}
+                                      onChange={handleChange}
+                                    />
+                                    <Button
+                                      type="button"
+                                      onClick={() => remove(index)}
+                                    >
+                                      <Trash2 />
+                                    </Button>
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
                   )}
                 </FieldArray>
+                <Button
+                  type="button"
+                  className="mt-2"
+                  onClick={() => push({ column1: "", column2: "" })}
+                >
+                  <Plus /> Add
+                </Button>
               </div>
             </div>
             <div className="col-span-1 bg-gray-50 p-4 rounded-sm">
